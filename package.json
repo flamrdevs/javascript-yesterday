@@ -1,6 +1,6 @@
 {
   "name": "javascript-yesterday",
-  "version": "1.0.1-alpha.1",
+  "version": "1.0.1-alpha.2",
   "description": "javascript-yesterday",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
