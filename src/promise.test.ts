@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { delay } from "./delay";
+import { delay } from "./promise";
 
-describe("Basic delay", () => {
+describe("Delay", () => {
   it("Wait for 3 second", async () => {
-    const foo = true;
+    let foo: string | undefined;
     await delay(3);
+    foo = "defined";
     expect(foo).toBeDefined();
   });
 });
