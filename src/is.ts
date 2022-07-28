@@ -2,6 +2,22 @@
 //	MAIN
 //	====================================================================================
 
+type AnyFunction = (...args: any[]) => Promise<any> | any;
+
+type Type = "string" | "boolean" | "number" | "object" | "function";
+
+type Typeof<T extends any> = T extends "string"
+  ? string
+  : T extends "boolean"
+  ? boolean
+  : T extends "number"
+  ? number
+  : T extends "object"
+  ? object
+  : T extends "function"
+  ? AnyFunction
+  : unknown;
+
 function isDefined<T>(value: T): value is Exclude<T, undefined> {
   return typeof value !== "undefined";
 }
@@ -26,7 +42,7 @@ function isObject(value: unknown): value is object {
   return typeof value === "object";
 }
 
-function isFunction(value: unknown): value is (...args: any[]) => Promise<any> | any {
+function isFunction(value: unknown): value is AnyFunction {
   return typeof value === "function";
 }
 
@@ -34,21 +50,7 @@ function isArray(value: unknown): value is any[] {
   return Array.isArray(value);
 }
 
-type Type = "string" | "boolean" | "number" | "object" | "function";
-
-type TypeOfType<T> = T extends "string"
-  ? string
-  : T extends "boolean"
-  ? boolean
-  : T extends "number"
-  ? number
-  : T extends "object"
-  ? object
-  : T extends "function"
-  ? (...args: any[]) => Promise<any> | any
-  : unknown;
-
-function isTypeOf<T extends Type>(value: unknown, type: T): value is TypeOfType<T> {
+function isTypeof<T extends Type>(value: unknown, type: T): value is Typeof<T> {
   switch (type) {
     case "string":
       return isString(value);
@@ -70,37 +72,20 @@ function isTypeOf<T extends Type>(value: unknown, type: T): value is TypeOfType<
   }
 }
 
-type KeyType = {
-  key: string;
-  type: Type;
-};
-
-function isObjectKeyTypeOf<KT extends Readonly<KeyType>>(
+function isObjectKeyTypeof<KTo extends Record<string, Type>>(
   value: unknown,
-  keyType: KT
+  keytypeof: KTo
 ): value is {
-  [key in KT["key"]]: TypeOfType<KT["type"]>;
+  [key in keyof KTo]: Typeof<KTo[key]>;
 } {
-  return isObject(value) && value.hasOwnProperty(keyType.key) && isTypeOf(value[keyType.key], keyType.type);
+  return isObject(value) && Object.entries(keytypeof).every(([key, type]) => value.hasOwnProperty(key) && isTypeof(value[key], type));
 }
 
-function createIsObjectKeyTypeOf<KT extends KeyType>(keyType: KT) {
+function createIsObjectKeyTypeof<KTo extends Record<string, Type>>(keytypeof: KTo) {
   return function (value: unknown): value is {
-    [key in KT["key"]]: TypeOfType<KT["type"]>;
+    [key in keyof KTo]: Typeof<KTo[key]>;
   } {
-    return isObjectKeyTypeOf(value, keyType);
-  };
-}
-
-function isObjectKeyTypesOf<KTs extends readonly Readonly<KeyType>[]>(value: unknown, keyTypes: KTs): boolean {
-  return isObject(value) && keyTypes.every(({ key, type }) => value.hasOwnProperty(key) && isTypeOf(value[key], type));
-}
-
-function createIsObjectKeyTypesOf<KTs extends readonly Readonly<KeyType>[]>(keyTypes: KTs) {
-  return function (value: unknown): value is {
-    [key in KTs[number]["key"]]: TypeOfType<KTs[number]["type"]>;
-  } {
-    return isObjectKeyTypesOf(value, keyTypes);
+    return isObjectKeyTypeof(value, keytypeof);
   };
 }
 
@@ -120,7 +105,7 @@ function isObjectArray(value: unknown): value is object[] {
   return isArray(value) && value.every(isObject);
 }
 
-function isFunctionArray(value: unknown): value is ((...args: any[]) => Promise<any> | any)[] {
+function isFunctionArray(value: unknown): value is AnyFunction[] {
   return isArray(value) && value.every(isFunction);
 }
 
@@ -128,7 +113,7 @@ function isFunctionArray(value: unknown): value is ((...args: any[]) => Promise<
 //	EXPORTS
 //	====================================================================================
 
-export type { Type, TypeOfType, KeyType };
+export type { Type, Typeof };
 export {
   isDefined,
   isUndefined,
@@ -138,11 +123,9 @@ export {
   isObject,
   isFunction,
   isArray,
-  isTypeOf,
-  isObjectKeyTypeOf,
-  createIsObjectKeyTypeOf,
-  isObjectKeyTypesOf,
-  createIsObjectKeyTypesOf,
+  isTypeof,
+  isObjectKeyTypeof,
+  createIsObjectKeyTypeof,
   isStringArray,
   isBooleanArray,
   isNumberArray,

@@ -2,7 +2,7 @@
 //	MAIN
 //	====================================================================================
 
-function getRandomBoolean(ratio: number = 0.5) {
+function boolean(ratio: number = 0.5) {
   return Math.random() >= ratio;
 }
 
@@ -10,4 +10,4 @@ function getRandomBoolean(ratio: number = 0.5) {
 //	EXPORTS
 //	====================================================================================
 
-export { getRandomBoolean };
+export { boolean };
